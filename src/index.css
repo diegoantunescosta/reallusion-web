@@ -153,3 +153,40 @@ span {
   height: 200px; /* Altura fixa para a imagem */
   object-fit: cover; /* A imagem se ajusta mantendo sua proporção */
 }
+body {
+  background-color: #000; /* Fundo preto */
+  color: #fff; /* Texto branco */
+}
+
+.card {
+  border: 1px solid gold; /* Borda dourada para os cards */
+}
+
+.card-title {
+  color: #ff0000; /* Título em dourado */
+}
+
+.btn-primary {
+  background-color: rgb(61, 60, 60); /* Fundo dourado para o botão */
+  border: none; /* Remover a borda do botão */
+}
+
+.btn-primary:hover {
+  background-color: #ebdd8d; /* Efeito hover mais claro */
+}
+
+.custom-label {
+  color: #4f5255; /* Escolha a cor desejada */
+  text-align: left; /* Alinha o texto à esquerda */
+  font-weight: bold; /* Opcional: deixa o título em negrito */
+}
+
+
+.min-vh-100 {
+  height: 100vh;
+}
+
+.shadow-lg {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+

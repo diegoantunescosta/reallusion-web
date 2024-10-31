@@ -1,52 +1,42 @@
-import React, { useState } from 'react';
+// LoginPage.jsx
+import React from 'react';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { Card, Container, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    // Simular autenticação e salvar o token
-    if (email === 'teste@teste.com' && password === '123456') {
-      localStorage.setItem('authToken', 'dummy-token'); // Salva o token
-      navigate('/create-avatar/33c4f9c8-7629-11ef-8a3d-42010a7be011'); // Navega para criação de avatar
-    } else {
-      alert('Credenciais inválidas');
-    }
+  // Função para gerenciar o sucesso do login
+  const handleLoginSuccess = (credentialResponse) => {
+    console.log('Login com sucesso:', credentialResponse);
+    navigate('/create-avatar'); // Navega para a página de criação de avatar após o login
+  };
+
+  // Função para gerenciar erros no login
+  const handleLoginError = () => {
+    console.log('Erro ao realizar login');
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', width: '300px' }}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ margin: '10px 0', padding: '10px' }}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Senha"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ margin: '10px 0', padding: '10px' }}
-          required
-        />
-        <button type="submit" style={{ padding: '10px', backgroundColor: '#4CAF50', color: 'white', cursor: 'pointer' }}>
-          Entrar
-        </button>
-      </form>
-      <button
-        onClick={() => navigate('/register')}
-        style={{ marginTop: '20px', padding: '10px', backgroundColor: '#4CAF50', color: 'white', cursor: 'pointer' }}
-      >
-        Cadastre-se
-      </button>
-    </div>
+    <GoogleOAuthProvider clientId="523729213609-24gkt8pfpnu9eq9kmhri0otrp2u8jad8.apps.googleusercontent.com">
+      <Container className="d-flex justify-content-center align-items-center min-vh-100">
+        <Card style={{ maxWidth: '400px', padding: '2rem', borderRadius: '15px' }} className="shadow-lg text-center">
+          <Card.Body>
+            <Card.Title style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>
+              Bem-vindo ao Euvatar
+            </Card.Title>
+            <Card.Text style={{ marginBottom: '1.5rem', fontSize: '1.1rem', color: '#555' }}>
+              Faça login para começar a criar e interagir com seus avatares personalizados
+            </Card.Text>
+            <GoogleLogin
+              onSuccess={handleLoginSuccess}
+              onError={handleLoginError}
+            />
+          </Card.Body>
+        </Card>
+      </Container>
+    </GoogleOAuthProvider>
   );
 }
