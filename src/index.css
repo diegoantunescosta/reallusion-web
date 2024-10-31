@@ -139,3 +139,17 @@ span {
   left: 1vw;
   z-index: 1;
 }
+
+.card {
+  width: 100%; /* A largura agora é 100% para se ajustar ao espaço disponível */
+  max-width: 300px; /* Tamanho máximo do card */
+  height: auto; /* Altura automática para manter a proporção */
+  display: flex;
+  flex-direction: column; /* Alinha o conteúdo em coluna */
+}
+
+.card-img-top {
+  width: 100%; /* A imagem ocupa toda a largura do card */
+  height: 200px; /* Altura fixa para a imagem */
+  object-fit: cover; /* A imagem se ajusta mantendo sua proporção */
+}

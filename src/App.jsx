@@ -10,8 +10,23 @@ import { useParams } from 'react-router-dom'; // Para obter o parâmetro da URL
 function App() {
   const { charID } = useParams(); // Obter o charID da URL
 
+  // Verifica se o charID é válido
+  if (!charID) {
+    return <div>Character ID is missing</div>;
+  }
+
   // Substitua com a sua API Key
-  const { client } = useConvaiClient(charID, 'c103e89ceeca0fdbb5c3093b13189909');
+  const { client, loading, error } = useConvaiClient(charID, 'c507501b2c69f1d57f0f78ab4e08525d');
+
+  // Mostra um indicador de carregamento se o cliente estiver sendo inicializado
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // Se ocorrer um erro ao criar o cliente
+  if (error) {
+    return <div>Error loading character: {error.message}</div>;
+  }
 
   return (
     <>
