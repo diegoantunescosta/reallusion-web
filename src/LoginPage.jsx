@@ -1,24 +1,36 @@
 // LoginPage.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Card, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 
 export default function LoginPage() {
   const navigate = useNavigate();
 
   // Função para gerenciar o sucesso do login
   const handleLoginSuccess = (credentialResponse) => {
-    console.log('Login com sucesso:', credentialResponse);
-    navigate('/create-avatar'); // Navega para a página de criação de avatar após o login
+    const userData = JSON.parse(atob(credentialResponse.credential.split('.')[1])); // Decodifica o payload do JWT
+    localStorage.setItem('googleToken', credentialResponse.credential);
+    localStorage.setItem('userName', userData.name); // Armazena o nome do usuário
+    navigate('/create-avatar');
   };
+  
+
+
 
   // Função para gerenciar erros no login
   const handleLoginError = () => {
     console.log('Erro ao realizar login');
   };
+
+  // useEffect para verificar se o usuário já está logado
+  useEffect(() => {
+    const token = localStorage.getItem('googleToken');
+    if (token) {
+      navigate('/create-avatar'); // Redireciona para a página de criação de avatar se já estiver logado
+    }
+  }, [navigate]);
 
   return (
     <GoogleOAuthProvider clientId="523729213609-24gkt8pfpnu9eq9kmhri0otrp2u8jad8.apps.googleusercontent.com">
@@ -55,4 +67,3 @@ export default function LoginPage() {
     </GoogleOAuthProvider>
   );
 }
-//video

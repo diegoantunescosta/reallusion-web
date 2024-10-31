@@ -38,7 +38,16 @@ export default function CreateAvatarPage() {
   // Estado para armazenar as informações do avatar em tempo real
   const [avatarInfo, setAvatarInfo] = useState({});
 
+  // Recupera o nome do usuário do localStorage
+  const userName = localStorage.getItem('userName') || 'Usuário';
+
   useEffect(() => {
+    // Verifica se o usuário está logado
+    const token = localStorage.getItem('googleToken');
+    if (!token) {
+      navigate('/'); // Redireciona para a página de login se não estiver logado
+    }
+
     const fetchAvatarByCharID = async (charID) => {
       try {
         const response = await fetch('https://api.convai.com/character/get', {
@@ -67,7 +76,7 @@ export default function CreateAvatarPage() {
     };
 
     fetchAvatars();
-  }, []);
+  }, [navigate]);
 
   const handleInputChange = (charID, field, value) => {
     // Atualiza o estado de avatarInfo com os novos valores
@@ -114,8 +123,20 @@ export default function CreateAvatarPage() {
     }
   };
 
+  const handleLogout = () => {
+    // Remove o token de autenticação e redireciona para a página de login
+    localStorage.removeItem('googleToken');
+    localStorage.removeItem('userName'); // Remove o nome do usuário
+    navigate('/'); // Redireciona para a página de login
+  };
+
   return (
     <div className="container mt-5">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="h3">Olá, {userName}</h1> {/* Exibe o nome do usuário */}
+        <Button variant="danger" onClick={handleLogout}>Deslogar</Button>
+      </div>
+  
       {/* Card para a logo */}
       <div className="row justify-content-center mb-4">
         <div className="col-12 text-center"> {/* Remover col-md-6 para centralizar totalmente */}
@@ -165,50 +186,47 @@ export default function CreateAvatarPage() {
                     backstory: avatarInfo[avatar.character_id]?.backstory || avatar.backstory || ''
                   })}>
                     <div className="mb-3">
-                    <label className="custom-label">Nome do Avatar</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      defaultValue={avatar.character_name || ''}
-                      onChange={(e) => handleInputChange(avatar.character_id, 'charName', e.target.value)}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="custom-label">Tipo de Voz</label>
-                    <select
-                      className="form-select"
-                      defaultValue={avatar.voice_type || ''}
-                      onChange={(e) => handleInputChange(avatar.character_id, 'voiceType', e.target.value)}
-                    >
-                      {voiceOptions.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mb-3">
-                    <label className="custom-label">Código de Idioma</label>
-                    <select
-                      className="form-select"
-                      defaultValue={avatar.language_code || ''}
-                      onChange={(e) => handleInputChange(avatar.character_id, 'languageCode', e.target.value)}
-                    >
-                      {languageOptions.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mb-3">
-                    <label className="custom-label">História de Fundo</label>
-                    <textarea
-                      className="form-control"
-                      defaultValue={avatar.backstory || ''}
-                      onChange={(e) => handleInputChange(avatar.character_id, 'backstory', e.target.value)}
-                    />
-                  </div>
-
-                    <Button variant="primary" type="submit" className="w-100">
-                      Iniciar Interação
-                    </Button>
+                      <label className="custom-label">Nome do Avatar</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        defaultValue={avatar.character_name || ''}
+                        onChange={(e) => handleInputChange(avatar.character_id, 'charName', e.target.value)}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="custom-label">Tipo de Voz</label>
+                      <select
+                        className="form-select"
+                        defaultValue={avatar.voice_type || ''}
+                        onChange={(e) => handleInputChange(avatar.character_id, 'voiceType', e.target.value)}
+                      >
+                        {voiceOptions.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <label className="custom-label">Idioma</label>
+                      <select
+                        className="form-select"
+                        defaultValue={avatar.language_code || ''}
+                        onChange={(e) => handleInputChange(avatar.character_id, 'languageCode', e.target.value)}
+                      >
+                        {languageOptions.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <label className="custom-label">História de Fundo</label>
+                      <textarea
+                        className="form-control"
+                        defaultValue={avatar.backstory || ''}
+                        onChange={(e) => handleInputChange(avatar.character_id, 'backstory', e.target.value)}
+                      />
+                    </div>
+                    <Button type="submit" variant="primary">Criar Avatar</Button>
                   </form>
                 </Card.Body>
               </Card>
@@ -216,7 +234,7 @@ export default function CreateAvatarPage() {
           ))
         ) : (
           <div className="text-center">
-            <p>Nenhum avatar encontrado. Tente novamente mais tarde.</p>
+            <p>Nenhum avatar disponível no momento.</p>
           </div>
         )}
       </div>
