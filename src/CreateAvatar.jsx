@@ -33,6 +33,7 @@ const avatarImages = {
 export default function CreateAvatarPage() {
   const [charData, setCharData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCreating, setIsCreating] = useState(false); // Novo estado para controlar o carregamento ao criar o avatar
   const navigate = useNavigate();
 
   // Estado para armazenar as informações do avatar em tempo real
@@ -42,7 +43,6 @@ export default function CreateAvatarPage() {
   const userName = localStorage.getItem('userName') || 'Usuário';
 
   useEffect(() => {
-    // Verifica se o usuário está logado
     const token = localStorage.getItem('googleToken');
     if (!token) {
       navigate('/'); // Redireciona para a página de login se não estiver logado
@@ -79,7 +79,6 @@ export default function CreateAvatarPage() {
   }, [navigate]);
 
   const handleInputChange = (charID, field, value) => {
-    // Atualiza o estado de avatarInfo com os novos valores
     setAvatarInfo((prevState) => ({
       ...prevState,
       [charID]: {
@@ -97,6 +96,7 @@ export default function CreateAvatarPage() {
 
   const handleSubmit = async (e, avatarData) => {
     e.preventDefault();
+    setIsCreating(true); // Ativa o carregamento ao criar o avatar
 
     try {
       const url = 'https://api.convai.com/character/create';
@@ -120,11 +120,12 @@ export default function CreateAvatarPage() {
       navigate(`/app/${charID}`);
     } catch (error) {
       console.error('Erro ao salvar o avatar:', error);
+    } finally {
+      setIsCreating(false); // Desativa o carregamento após a tentativa de criação
     }
   };
 
   const handleLogout = () => {
-    // Remove o token de autenticação e redireciona para a página de login
     localStorage.removeItem('googleToken');
     localStorage.removeItem('userName'); // Remove o nome do usuário
     navigate('/'); // Redireciona para a página de login
@@ -132,6 +133,18 @@ export default function CreateAvatarPage() {
 
   return (
     <div className="container mt-5">
+      {isCreating && (
+        <div className="loading-overlay">
+          <img 
+            src="LOGOTIPO HORIZONTAL 1 - PRETO.png" // Substitua pelo caminho da sua imagem
+            alt="Carregando..."
+            className="pulsing-image-avatar" // Mantenha esta classe para aplicar as alterações
+          />
+        </div>
+      )}
+
+
+      
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h3">Olá, {userName}</h1> {/* Exibe o nome do usuário */}
         <Button variant="danger" onClick={handleLogout}>Deslogar</Button>
@@ -219,14 +232,14 @@ export default function CreateAvatarPage() {
                       </select>
                     </div>
                     <div className="mb-3">
-                      <label className="custom-label">História de Fundo</label>
+                      <label className="custom-label">Contexto</label>
                       <textarea
                         className="form-control"
                         defaultValue={avatar.backstory || ''}
                         onChange={(e) => handleInputChange(avatar.character_id, 'backstory', e.target.value)}
                       />
                     </div>
-                    <Button type="submit" variant="primary">Criar Avatar</Button>
+                    <Button type="submit" variant="primary">Iniciar Interação</Button>
                   </form>
                 </Card.Body>
               </Card>

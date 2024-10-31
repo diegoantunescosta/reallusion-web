@@ -172,7 +172,7 @@ body {
 }
 
 .btn-primary:hover {
-  background-color: #ebdd8d; /* Efeito hover mais claro */
+  background-color: #000000; /* Efeito hover mais claro */
 }
 
 .custom-label {
@@ -210,4 +210,40 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%); /* Centraliza o vídeo */
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pulsing-image-avatar {
+  max-width: 70%; /* Ajuste a largura máxima conforme necessário */
+  width: 100%; /* Torna a imagem responsiva */
+  height: auto; /* Mantém a proporção da imagem */
+  animation: pulse 1.5s infinite; /* Adiciona a animação de pulsar */
+}
+
+
+@keyframes pulse {
+  0% {
+    transform: scale(1) translateY(0); /* Escala original e posição inicial */
+    opacity: 1; /* Totalmente visível */
+  }
+  50% {
+    transform: scale(1.1) translateY(-10px); /* Aumenta 10% e move para cima */
+    opacity: 0.7; /* Torna-se levemente transparente */
+  }
+  100% {
+    transform: scale(1) translateY(0); /* Retorna à escala original e posição inicial */
+    opacity: 1; /* Totalmente visível */
+  }
 }
