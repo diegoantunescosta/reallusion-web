@@ -25,27 +25,18 @@ const charIDList = [
 
 // Mapeamento de imagens para cada charID
 const avatarImages = {
-  '839fe982-9783-11ef-aec9-42010a7be016': '96d1425510379eca8f16aa09a4e676fc.jpg',
+  '839fe982-9783-11ef-aec9-42010a7be016': 'animations.png',
   '65bd3596-9783-11ef-b686-42010a7be016': 'c3rti6htgosc1.webp',
   '4d0fc78e-9783-11ef-be07-42010a7be016': 'images.jpeg'
 };
 
 export default function CreateAvatarPage() {
-  const [charName, setCharName] = useState('');
-  const [voiceType, setVoiceType] = useState('');
-  const [languageCode, setLanguageCode] = useState('');
-  const [backstory, setBackstory] = useState('');
-  const [charID, setCharID] = useState('');
-  const [existingAvatars, setExistingAvatars] = useState([]);
-  const [isNewAvatar, setIsNewAvatar] = useState(true);
-  const [showAvatarList, setShowAvatarList] = useState(true);
-  const [selectedAvatar, setSelectedAvatar] = useState(null);
-  const [selectedAvatarImage, setSelectedAvatarImage] = useState(null);
-  const [newAvatarID, setNewAvatarID] = useState('');
-  const [isCharacterSelected, setIsCharacterSelected] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Novo estado para controle de carregamento
+  const [charData, setCharData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Estado para armazenar as informações do avatar em tempo real
+  const [avatarInfo, setAvatarInfo] = useState({});
 
   useEffect(() => {
     const fetchAvatarByCharID = async (charID) => {
@@ -59,6 +50,7 @@ export default function CreateAvatarPage() {
           body: JSON.stringify({ charID })
         });
         const data = await response.json();
+        console.log(data); // Log da resposta da API
         return data;
       } catch (error) {
         console.error(`Erro ao buscar avatar com ID ${charID}:`, error);
@@ -67,57 +59,35 @@ export default function CreateAvatarPage() {
     };
 
     const fetchAvatars = async () => {
-      setIsLoading(true); // Começa o carregamento
+      setIsLoading(true);
       const avatarsPromises = charIDList.map(fetchAvatarByCharID);
       const avatarsData = await Promise.all(avatarsPromises);
-      setExistingAvatars(avatarsData.filter(avatar => avatar !== null));
-      setIsLoading(false); // Termina o carregamento
+      setCharData(avatarsData.filter(avatar => avatar !== null));
+      setIsLoading(false);
     };
 
     fetchAvatars();
   }, []);
 
-  const handleSelectAvatar = async (avatar) => {
-    const newCharID = `new-${Date.now()}`;
-    setCharID(newCharID);
-    setCharName(avatar.character_name || '');
-    setVoiceType(avatar.voice_type || '');
-    setLanguageCode(avatar.language_code || '');
-    setBackstory(avatar.backstory || '');
-    setNewAvatarID(newCharID);
-    setSelectedAvatar(avatar);
-    setSelectedAvatarImage(avatarImages[avatar.character_id] || 'https://via.placeholder.com/200');
-
-    // Aqui, redireciona para a página de interação com o avatar
-    try {
-      const interactionResponse = await fetch('URL_DA_PAGINA_DE_INTERACAO', { // substitua pela URL real
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'CONVAI-API-KEY': 'c103e89ceeca0fdbb5c3093b13189909'
-        },
-        body: JSON.stringify({ charID: avatar.character_id }) // ou qualquer outra informação necessária
-      });
-
-      if (interactionResponse.ok) {
-        const charID = await interactionResponse.json();
-        navigate(`/app/${charID}`); // Ajuste a navegação para a página de interação com o avatar
-      } else {
-        throw new Error('Falha ao iniciar interação com o avatar');
+  const handleInputChange = (charID, field, value) => {
+    // Atualiza o estado de avatarInfo com os novos valores
+    setAvatarInfo((prevState) => ({
+      ...prevState,
+      [charID]: {
+        ...(prevState[charID] || {}),
+        [field]: value
       }
-    } catch (error) {
-      console.error('Erro ao iniciar interação com o avatar:', error);
-    }
-    
-    setShowAvatarList(false);
-    setIsCharacterSelected(true);
-    setIsNewAvatar(false);
-    setShowForm(true);
+    }));
+
+    // Salva automaticamente no localStorage
+    localStorage.setItem(charID, JSON.stringify({
+      ...(avatarInfo[charID] || {}),
+      [field]: value
+    }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, avatarData) => {
     e.preventDefault();
-    const avatarData = { charID, charName, voiceType, languageCode, backstory };
 
     try {
       const url = 'https://api.convai.com/character/create';
@@ -144,141 +114,111 @@ export default function CreateAvatarPage() {
     }
   };
 
-  const handleCreateNewAvatar = () => {
-    setCharID('');
-    setCharName('');
-    setVoiceType('');
-    setLanguageCode('');
-    setBackstory('');
-    setIsNewAvatar(true);
-    setShowAvatarList(false);
-    setSelectedAvatarImage(null);
-    setIsCharacterSelected(false);
-    setShowForm(true);
-  };
-
-  const handleChooseExistingAvatar = () => {
-    setShowAvatarList(!showAvatarList);
-    setShowForm(false);
-    setIsNewAvatar(false);
-  };
-
   return (
     <div className="container mt-5">
-      <h2 className="text-center mb-4">{isNewAvatar ? 'Criar Novo Avatar' : 'Escolher Avatar Existente'}</h2>
-
-      <div className="d-flex justify-content-center mb-4">
-        <Button variant="success" className="me-2" onClick={handleCreateNewAvatar}>
-          Criar Novo Avatar
-        </Button>
-        <Button variant="success" onClick={handleChooseExistingAvatar}>
-          Escolher Avatar Existente
-        </Button>
-      </div>
-
-      {showAvatarList && (
-        <div className="row justify-content-center">
-          {isLoading ? ( // Verifica se está carregando
-            <div className="text-center">
-              <Spinner animation="border" role="status">
-                <span className="visually-hidden">Carregando...</span>
-              </Spinner>
-            </div>
-          ) : existingAvatars.length > 0 ? (
-            existingAvatars.map((avatar) => (
-              <div className="col-12 col-sm-6 col-md-4 mb-4 d-flex justify-content-center" key={avatar.character_id}>
-                <Card className="text-center" style={{ width: '100%', maxWidth: '300px' }}>
-                  <Card.Img
-                    variant="top"
-                    src={avatarImages[avatar.character_id] || 'https://via.placeholder.com/200'} // Adiciona uma imagem placeholder
-                    alt="Modelo Placeholder"
-                    className="card-img-top"
-                    style={{ height: '150px', objectFit: 'contain' }} // Ajuste o tamanho da imagem
-                  />
-                  <Card.Body>
-                    <Card.Title>{avatar.character_name || 'Avatar Sem Nome'}</Card.Title>
-                    <Card.Text>
-                      <strong>Tipo de Voz:</strong> {avatar.voice_type} <br />
-                      <strong>Código de Idioma:</strong> {avatar.language_code} <br />
-                      <strong>História de Fundo:</strong> {avatar.backstory}
-                    </Card.Text>
-                    <Button variant="primary" onClick={() => handleSelectAvatar(avatar)}>
-                      Selecionar Avatar
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </div>
-            ))
-          ) : (
-            <div className="text-center">
-              <p>Nenhum avatar encontrado. Tente novamente mais tarde.</p>
-            </div>
-          )}
+      {/* Card para a logo */}
+      <div className="row justify-content-center mb-4">
+        <div className="col-12 text-center"> {/* Remover col-md-6 para centralizar totalmente */}
+          <Card className="shadow-sm mx-auto" style={{ borderRadius: '15px', maxWidth: '300px' }}> {/* Adicionar maxWidth */}
+            <Card.Body>
+              <img 
+                src="LOGOTIPO HORIZONTAL 1 - PRETO.png" // Substitua pelo caminho do seu logo
+                alt="Logo Euvatar"
+                style={{ maxWidth: '80%', height: 'auto' }} // Ajuste o tamanho conforme necessário
+              />
+            </Card.Body>
+          </Card>
         </div>
-      )}
-
-      {showForm && (
-        <form onSubmit={handleSubmit} className="mt-4">
-          <h4>{isNewAvatar ? 'Criação de Novo Avatar' : 'Interagindo com Avatar Selecionado'}</h4>
-          <div className="mb-3">
-            <label htmlFor="charName" className="form-label">Nome do Avatar:</label>
-            <input
-              type="text"
-              id="charName"
-              value={charName}
-              onChange={(e) => setCharName(e.target.value)}
-              className="form-control"
-              required
-            />
+      </div>
+  
+      <div className="row justify-content-center">
+        {isLoading ? (
+          <div className="text-center">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Carregando...</span>
+            </Spinner>
           </div>
-
-          <div className="mb-3">
-            <label htmlFor="voiceType" className="form-label">Tipo de Voz:</label>
-            <select
-              id="voiceType"
-              value={voiceType}
-              onChange={(e) => setVoiceType(e.target.value)}
-              className="form-select"
-              required
-            >
-              {voiceOptions.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
+        ) : charData.length > 0 ? (
+          charData.map((avatar) => (
+            <div className="col-12 col-sm-6 col-md-4 mb-4 d-flex justify-content-center" key={avatar.character_id}>
+              <Card className="text-center shadow-lg" style={{ width: '100%', maxWidth: '300px', borderRadius: '15px' }}>
+                <Card.Img
+                  variant="top"
+                  src={avatarImages[avatar.character_id] || 'https://via.placeholder.com/200'}
+                  alt="Modelo Placeholder"
+                  className="card-img-top"
+                  style={{ height: '150px', objectFit: 'contain', borderRadius: '15px 15px 0 0' }}
+                  onError={(e) => {
+                    console.error(`Imagem não encontrada para ID: ${avatar.character_id}`);
+                    e.target.src = 'https://via.placeholder.com/200'; // Mostra uma imagem de placeholder
+                  }}
+                />
+                <Card.Body className="p-4">
+                  <Card.Title className="mb-3" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
+                    {avatar.character_name || 'Avatar Sem Nome'}
+                  </Card.Title>
+                  <form onSubmit={(e) => handleSubmit(e, {
+                    charID: `new-${Date.now()}`,
+                    charName: avatarInfo[avatar.character_id]?.charName || avatar.character_name || '',
+                    voiceType: avatarInfo[avatar.character_id]?.voiceType || avatar.voice_type || '',
+                    languageCode: avatarInfo[avatar.character_id]?.languageCode || avatar.language_code || '',
+                    backstory: avatarInfo[avatar.character_id]?.backstory || avatar.backstory || ''
+                  })}>
+                    <div className="mb-3">
+                      <label className="form-label">Nome do Avatar</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        defaultValue={avatar.character_name || ''}
+                        onChange={(e) => handleInputChange(avatar.character_id, 'charName', e.target.value)}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Tipo de Voz</label>
+                      <select
+                        className="form-select"
+                        defaultValue={avatar.voice_type || ''}
+                        onChange={(e) => handleInputChange(avatar.character_id, 'voiceType', e.target.value)}
+                      >
+                        {voiceOptions.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Código de Idioma</label>
+                      <select
+                        className="form-select"
+                        defaultValue={avatar.language_code || ''}
+                        onChange={(e) => handleInputChange(avatar.character_id, 'languageCode', e.target.value)}
+                      >
+                        {languageOptions.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">História de Fundo</label>
+                      <textarea
+                        className="form-control"
+                        defaultValue={avatar.backstory || ''}
+                        onChange={(e) => handleInputChange(avatar.character_id, 'backstory', e.target.value)}
+                      />
+                    </div>
+                    <Button variant="primary" type="submit" className="w-100">
+                      Iniciar Interação
+                    </Button>
+                  </form>
+                </Card.Body>
+              </Card>
+            </div>
+          ))
+        ) : (
+          <div className="text-center">
+            <p>Nenhum avatar encontrado. Tente novamente mais tarde.</p>
           </div>
-
-          <div className="mb-3">
-            <label htmlFor="languageCode" className="form-label">Código de Idioma:</label>
-            <select
-              id="languageCode"
-              value={languageCode}
-              onChange={(e) => setLanguageCode(e.target.value)}
-              className="form-select"
-              required
-            >
-              {languageOptions.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-3">
-            <label htmlFor="backstory" className="form-label">História de Fundo:</label>
-            <textarea
-              id="backstory"
-              value={backstory}
-              onChange={(e) => setBackstory(e.target.value)}
-              className="form-control"
-              rows="3"
-              required
-            />
-          </div>
-
-          <Button type="submit" variant="primary">
-            {isNewAvatar ? 'Criar Avatar' : 'Salvar Avatar'}
-          </Button>
-        </form>
-      )}
+        )}
+      </div>
     </div>
   );
 }

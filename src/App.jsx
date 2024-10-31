@@ -16,7 +16,7 @@ function App() {
   }
 
   // Substitua com a sua API Key
-  const { client, loading, error } = useConvaiClient(charID, 'c507501b2c69f1d57f0f78ab4e08525d');
+  const { client, loading, error } = useConvaiClient(charID, 'bfa06dc135b71e3c6f0b2a311e044fd4');
 
   // Mostra um indicador de carregamento se o cliente estiver sendo inicializado
   if (loading) {
